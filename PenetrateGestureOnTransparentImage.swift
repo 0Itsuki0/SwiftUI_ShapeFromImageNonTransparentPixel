@@ -119,9 +119,11 @@ private struct ImageShape: Shape  {
 
 }
 
-
 private extension CGImage {
-    func getAlpha(at point: CGPoint) -> CGFloat? {
+    func getAlpha(at point: CGPoint, isAlphaFirst: Bool) -> CGFloat? {
+        if !self.hasAlpha {
+            return nil
+        }
         guard let provider = self.dataProvider else { return nil }
         
         let pixelData = provider.data
@@ -130,9 +132,49 @@ private extension CGImage {
         
         let pixelInfoIndex: Int = ((Int(self.width) * Int(point.y)) + Int(point.x)) * 4
         
-        return CGFloat(data[pixelInfoIndex+3]) / CGFloat(255.0)
+        if isAlphaFirst {
+            return CGFloat(data[pixelInfoIndex]) / CGFloat(255.0)
+        } else {
+            return CGFloat(data[pixelInfoIndex+3]) / CGFloat(255.0)
+        }
+    }
+    
+    var hasAlpha: Bool {
+        return self.alphaInfo != CGImageAlphaInfo.none
+        && self.alphaInfo != CGImageAlphaInfo.noneSkipFirst
+        && self.alphaInfo != CGImageAlphaInfo.noneSkipLast
+    }
+    
+    var isAlphaFirst: Bool {
+        if !self.hasAlpha {
+            return false
+        }
+        
+        let byteOrder = self.byteOrderInfo
+        let alphaInfo = self.alphaInfo
+        
+        let alphaFirst: Bool = alphaInfo == .premultipliedFirst || alphaInfo == .first || alphaInfo == .noneSkipFirst
+        let alphaLast: Bool = alphaInfo == .premultipliedLast || alphaInfo == .last || alphaInfo == .noneSkipLast
+        let endianLittle: Bool = byteOrder == .order16Little || byteOrder == .order32Little
+
+        if alphaFirst && endianLittle {
+            // BGRA
+            return false
+        } else if alphaFirst {
+            // ARGB
+            return true
+        } else if alphaLast && endianLittle {
+            // ABGR
+            return true
+        } else if alphaLast {
+            // RGBA
+            return false
+        }
+        
+        return false
     }
 }
+
 
 
 

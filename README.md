@@ -14,7 +14,6 @@ private struct ImageShape: Shape  {
 
     
     func path(in rect: CGRect) -> Path {
-        print(rect)
         
         guard let cgImage = self.image?.cgImage else { return Path() }
         let width = cgImage.width

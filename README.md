@@ -65,14 +65,8 @@ private struct ImageShape: Shape  {
     }
 
 }
-
 private extension CGImage {
     func getAlpha(at point: CGPoint) -> CGFloat? {
-        let alphaInfo = self.alphaInfo
-        if alphaInfo != .premultipliedLast && alphaInfo != .premultipliedFirst {
-            return nil
-        }
-        
         guard let provider = self.dataProvider else { return nil }
         
         let pixelData = provider.data
@@ -81,13 +75,8 @@ private extension CGImage {
         
         let pixelInfoIndex: Int = ((Int(self.width) * Int(point.y)) + Int(point.x)) * 4
         
-        if alphaInfo == .premultipliedLast {
-            return CGFloat(data[pixelInfoIndex+3]) / CGFloat(255.0)
-        } else {
-            return CGFloat(data[pixelInfoIndex]) / CGFloat(255.0)
-        }
+        return CGFloat(data[pixelInfoIndex+3]) / CGFloat(255.0)
     }
-
 }
 ```
 

@@ -1,6 +1,6 @@
 # Shape From Image Non-Transparent Pixel
 
-Creating a Shape from an Image's non-transparent pixel. 
+## Creating a Shape from an Image's non-transparent pixel. 
 ```
 private struct ImageShape: Shape  {
     var image: UIImage?
@@ -93,7 +93,7 @@ private extension CGImage {
 ```
 
 
-Usage: 
+## Usage: 
 - add it as a `contentShape` modifier to an image to pass through gestures on transparent pixels.
 
 ```

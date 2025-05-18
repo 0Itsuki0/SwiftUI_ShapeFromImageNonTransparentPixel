@@ -2,7 +2,6 @@
 
 ## Creating a Shape from an Image's non-transparent pixel. 
 ```
-
 private struct ImageShape: Shape  {
     var image: UIImage?
     
@@ -12,6 +11,9 @@ private struct ImageShape: Shape  {
     // to expensive to loop through individual pixel
     // max of maxSteps on width or maxSteps on height
     var maxSteps: Int = 50
+    
+    // increase the value for more tappable area in the surrounding
+    var rectSizeFactor: CGFloat = 2.0
 
     
     func path(in rect: CGRect) -> Path {
@@ -28,19 +30,23 @@ private struct ImageShape: Shape  {
         let scaleX = rect.width / CGFloat(width)
         let scaleY = rect.height / CGFloat(height)
         
-        let stepSize: Int = max(width / maxSteps, height / maxSteps)
+        let stepSizeX: Int = width / maxSteps
+        let stepSizeY: Int = height / maxSteps
 
-        let rectSize = CGFloat(stepSize) * 1.1
+        let rectSizeX = CGFloat(stepSizeX) * rectSizeFactor
+        let rectSizeY = CGFloat(stepSizeY) * rectSizeFactor
         let unitRect = Rectangle()
-            .size(.init(width: rectSize, height: rectSize))
-            .transform(.init(translationX: -rectSize/2, y: -rectSize/2))
+            .size(.init(width: rectSizeX, height: rectSizeY))
+            .transform(.init(translationX: -rectSizeX/2, y: -rectSizeY/2))
         
         var finalShape: (any Shape)? = nil
          
         // to expensive to loop through individual pixel
-        for i in stride(from: 0, to: width, by: stepSize) {
-            for j in stride(from: 0, to: height, by: stepSize) {
-                let floatX = CGFloat(i)
+        for i in stride(from: 0, to: width, by: stepSizeX) {
+            let floatX = CGFloat(i)
+            let offsetX = floatX * scaleX
+
+            for j in stride(from: 0, to: height, by: stepSizeY) {
                 let floatY = CGFloat(j)
                 
                 guard let alpha = cgImage.getAlpha(at: CGPoint(x: floatX, y: floatY), isAlphaFirst: isAlphaFirst) else { continue }
@@ -48,7 +54,6 @@ private struct ImageShape: Shape  {
                     continue
                 }
                 
-                let offsetX = floatX * scaleX
                 let offsetY = floatY * scaleY
 
                 if finalShape == nil {

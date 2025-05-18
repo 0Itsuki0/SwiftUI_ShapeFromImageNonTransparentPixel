@@ -2,6 +2,7 @@
 
 ## Creating a Shape from an Image's non-transparent pixel. 
 ```
+
 private struct ImageShape: Shape  {
     var image: UIImage?
     
@@ -16,8 +17,13 @@ private struct ImageShape: Shape  {
     func path(in rect: CGRect) -> Path {
         
         guard let cgImage = self.image?.cgImage else { return Path() }
+        if !cgImage.hasAlpha {
+            return Path()
+        }
+        
         let width = cgImage.width
         let height = cgImage.height
+        let isAlphaFirst = cgImage.isAlphaFirst
         
         let scaleX = rect.width / CGFloat(width)
         let scaleY = rect.height / CGFloat(height)
@@ -37,7 +43,7 @@ private struct ImageShape: Shape  {
                 let floatX = CGFloat(i)
                 let floatY = CGFloat(j)
                 
-                guard let alpha = cgImage.getAlpha(at: CGPoint(x: floatX, y: floatY)) else { continue }
+                guard let alpha = cgImage.getAlpha(at: CGPoint(x: floatX, y: floatY), isAlphaFirst: isAlphaFirst) else { continue }
                 if alpha <= alphaThreshold {
                     continue
                 }
@@ -65,6 +71,7 @@ private struct ImageShape: Shape  {
     }
 
 }
+
 private extension CGImage {
     func getAlpha(at point: CGPoint, isAlphaFirst: Bool) -> CGFloat? {
         if !self.hasAlpha {
